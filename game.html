@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lamamu Adventure - Game by SEKOPEJ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    font-family: 'Courier New', monospace; 
+    overflow: hidden; 
+    background: #000; 
+    width: 100vw; 
+    height: 100vh;
+  }
+  
+  /* CHARACTER SETUP SCREEN */
+  #characterSetupScreen {
+    position: relative; width: 100vw; height: 100vh;
+    background: linear-gradient(180deg, #2e7d32 0%, #388e3c 50%, #43a047 100%);
+    color: white; padding: 30px; overflow-y: auto; display: flex;
+    flex-direction: column; align-items: center; justify-content: flex-start;
+  }
+  
+  .setup-title {
+    font-size: 36px; margin-bottom: 20px; color: #4caf50;
+    text-shadow: 3px 3px 0 #000; font-weight: 900;
+    text-align: center; animation: setup-glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes setup-glow {
+    from { text-shadow: 3px 3px 0 #000, 0 0 20px #4caf50; }
+    to { text-shadow: 3px 3px 0 #000, 0 0 40px #4caf50, 0 0 60px #4caf50; }
+  }
+  
+  .setup-subtitle {
+    font-size: 18px; margin-bottom: 30px; color: #e8f5e8;
+    text-align: center; opacity: 0.9;
+  }
+  
+  .progress-info {
+    margin-bottom: 30px; padding: 20px; background: rgba(0,0,0,0.7);
+    border-radius: 15px; border: 3px solid #4caf50; text-align: center;
+    min-width: 400px;
+  }
+  
+  .progress-text {
+    font-size: 18px; color: #4caf50; font-weight: bold; margin-bottom: 10px;
+  }
+  
+  .progress-bar {
+    width: 100%; height: 12px; background: rgba(255,255,255,0.1);
+    border-radius: 6px; overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #4caf50, #66bb6a);
+    border-radius: 6px; transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  }
+  
+  .character-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px; max-width: 1200px; width: 100%;
+  }
+  
+  .character-card {
+    background: rgba(0,0,0,0.8); border-radius: 15px; padding: 20px;
+    text-align: center; border: 3px solid #4caf50; transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  
+  .character-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4);
+  }
+  
+  .character-card.uploaded {
+    border-color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+  }
+  
+  .character-name {
+    font-size: 20px; margin-bottom: 15px; color: #4caf50; font-weight: bold;
+  }
+  
+  .character-preview {
+    width: 80px; height: 80px; margin: 0 auto 15px;
+    border-radius: 10px; border: 2px solid #fff;
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; background-size: cover; background-position: center;
+  }
+  
+  .character-preview.has-image {
+    border-color: #2ecc71;
+  }
+  
+  .character-description {
+    font-size: 12px; margin-bottom: 15px; color: #e8f5e8;
+    line-height: 1.3; opacity: 0.9;
+  }
+  
+  .upload-area {
+    border: 2px dashed #66bb6a; border-radius: 10px; padding: 10px;
+    margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease;
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .upload-area:hover {
+    border-color: #4caf50;
+    background: rgba(76, 175, 80, 0.1);
+  }
+  
+  .upload-area.has-image {
+    border-color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+  }
+  
+  .upload-placeholder {
+    color: #a5d6a7; font-size: 11px;
+  }
+  
+  .upload-btn {
+    padding: 8px 15px; background: linear-gradient(45deg, #4caf50, #66bb6a);
+    border: none; border-radius: 8px; color: white; cursor: pointer;
+    font-weight: bold; font-size: 12px; width: 100%; margin-bottom: 5px;
+    transition: all 0.3s ease; text-transform: uppercase;
+  }
+  
+  .upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.5);
+  }
+  
+  .reset-btn {
+    padding: 6px 12px; background: linear-gradient(45deg, #f44336, #d32f2f);
+    border: none; border-radius: 6px; color: white; cursor: pointer;
+    font-weight: bold; font-size: 10px; width: 100%;
+    transition: all 0.3s ease; text-transform: uppercase;
+  }
+  
+  .reset-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.5);
+  }
+  
+  .start-game-btn {
+    position: fixed; bottom: 30px; right: 30px;
+    padding: 20px 40px; background: linear-gradient(45deg, #ff4757, #ffa502);
+    border: 4px solid #000; border-radius: 15px; color: white; cursor: pointer;
+    font-weight: bold; font-size: 18px; transition: all 0.3s ease;
+    text-transform: uppercase; letter-spacing: 2px; z-index: 100;
+    animation: pulse 2s infinite; display: none;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  
+  .start-game-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(255, 71, 87, 0.5);
+  }
+  
+  .back-btn {
+    position: absolute; top: 20px; left: 20px;
+    padding: 15px 30px; background: linear-gradient(45deg, #34495e, #2c3e50);
+    border: 3px solid #000; border-radius: 12px; color: white; cursor: pointer;
+    font-weight: bold; font-size: 16px; transition: all 0.3s ease;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  
+  .back-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  
+  /* GAME SCREEN */
+  #gameScreen {
+    display: none; 
+    width: 100vw; 
+    height: 100vh;
+    background: linear-gradient(45deg, #000011, #001122, #002244);
+    overflow: hidden; 
+    position: relative;
+  }
+  
+  .game-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  #gameCanvas {
+    background: linear-gradient(45deg, #000011, #001122, #002244);
+    border: 2px solid #64ffda;
+    box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+  }
+  
+  /* UI'LER */
+  .game-ui {
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    z-index: 1000;
+    background: rgba(0, 10, 20, 0.8); 
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    min-width: 110px;
+    max-width: 120px;
+  }
+  
+  .ui-header {
+    color: #64ffda; font-size: 9px; font-weight: bold;
+    text-align: center; margin-bottom: 5px;
+    text-shadow: 0 0 4px rgba(100, 255, 218, 0.6);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+  }
+  
+  .ui-item {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 3px; font-size: 8px; color: white;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .ui-label {
+    display: flex; align-items: center; gap: 2px;
+    font-weight: 600;
+  }
+  
+  .ui-value {
+    color: #64ffda; font-weight: bold; font-size: 9px;
+    text-shadow: 0 0 3px rgba(100, 255, 218, 0.6);
+  }
+  
+  .firefly-container {
+    display: flex; align-items: center; gap: 3px;
+  }
+  
+  .cooldown-bar {
+    width: 30px; height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px; overflow: hidden;
+    border: 1px solid rgba(100, 255, 218, 0.3);
+  }
+  
+  .cooldown-fill {
+    height: 100%; 
+    background: linear-gradient(90deg, #ff4757, #ffa502);
+    border-radius: 1px; 
+    transition: width 0.1s ease;
+    box-shadow: 0 0 2px rgba(255, 71, 87, 0.6);
+  }
+  
+  .controls-info {
+    position: absolute; 
+    bottom: 10px; 
+    left: 10px; 
+    z-index: 1000;
+    background: rgba(20, 10, 0, 0.8);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 165, 2, 0.3);
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    max-width: 120px;
+  }
+  
+  .controls-header {
+    color: #ffa502; font-size: 9px; font-weight: bold;
+    text-align: center; margin-bottom: 5px;
+    text-shadow: 0 0 4px rgba(255, 165, 2, 0.6);
+    font-family: 'Courier New', monospace;
+  }
+  
+  .control-item {
+    display: flex; align-items: center; gap: 3px;
+    margin-bottom: 2px; font-size: 7px; color: white;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .control-key {
+    background: rgba(255, 165, 2, 0.2);
+    border: 1px solid rgba(255, 165, 2, 0.6);
+    border-radius: 2px;
+    padding: 1px 3px;
+    color: #ffa502;
+    font-weight: bold;
+    min-width: 15px;
+    text-align: center;
+    font-size: 6px;
+  }
+  
+  .control-desc {
+    color: #e0e0e0;
+  }
+  
+  .control-note {
+    font-size: 5px; color: #888;
+    font-style: italic; margin-top: 3px;
+    text-align: center;
+  }
+  
+  .game-back-btn {
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    z-index: 1000;
+    background: rgba(220, 20, 20, 0.9);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 71, 87, 0.6);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: white; cursor: pointer;
+    font-weight: bold; font-size: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.3);
+  }
+  
+  .game-back-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(255, 71, 87, 0.5);
+    background: rgba(255, 71, 87, 0.9);
+  }
+  
+  .signature-game {
+    position: absolute; 
+    bottom: 10px; 
+    right: 10px; 
+    z-index: 1000;
+    background: rgba(10, 10, 30, 0.9);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(100, 255, 218, 0.4);
+    border-radius: 3px;
+    padding: 4px 8px;
+    color: #64ffda; cursor: pointer;
+    font-weight: bold; font-size: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none; display: inline-block;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.3px; text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(100, 255, 218, 0.2);
+  }
+  
+  .signature-game:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(100, 255, 218, 0.4);
+    border-color: rgba(100, 255, 218, 0.8);
+    text-shadow: 0 0 4px rgba(100, 255, 218, 0.8);
+  }
+</style>
+</head>
+<body>
+
+<!-- CHARACTER SETUP SCREEN -->
+<div id="characterSetupScreen">
+  <button class="back-btn" onclick="goBackToMenu()">← MAIN MENU</button>
+  
+  <h1 class="setup-title">🎮 GAME CHARACTER SETUP</h1>
+  <div class="setup-subtitle">Upload custom images for your game characters and items!</div>
+  
+  <div class="progress-info">
+    <div class="progress-text">Upload Progress: <span id="uploadProgress">0/8</span> Characters</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+  </div>
+  
+  <div class="character-grid" id="characterGrid">
+    <!-- Characters will be loaded here -->
+  </div>
+  
+  <button class="start-game-btn" id="startGameBtn" onclick="startGamePlay()">
+    🚀 START GAME!
+  </button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen">
+  <div class="game-wrapper">
+    <canvas id="gameCanvas" width="1200" height="700"></canvas>
+  </div>
+  
+  <!-- UI'LER -->
+  <div class="game-ui">
+    <div class="ui-header">🎮 STATUS</div>
+    
+    <div class="ui-item">
+      <div class="ui-label">⏱️ Time</div>
+      <div class="ui-value" id="gameTime">00:00</div>
+    </div>
+    
+    <div class="ui-item">
+      <div class="ui-label">💰 MoCoin</div>
+      <div class="ui-value" id="coinCount">0</div>
+    </div>
+    
+    <div class="ui-item">
+      <div class="ui-label">❤️ Lives</div>
+      <div class="ui-value" id="lives">3</div>
+    </div>
+    
+    <div class="ui-item">
+      <div class="ui-label">🪲 Fly</div>
+      <div class="firefly-container">
+        <div class="ui-value" id="fireflyStatus">Ready</div>
+        <div class="cooldown-bar">
+          <div class="cooldown-fill" id="fireflyCooldown" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="controls-info">
+    <div class="controls-header">🎮 CONTROLS</div>
+    
+    <div class="control-item">
+      <div class="control-key">WASD</div>
+      <div class="control-desc">Move</div>
+    </div>
+    
+    <div class="control-item">
+      <div class="control-key">SPACE</div>
+      <div class="control-desc">Firefly</div>
+    </div>
+    
+    <div class="control-note">
+      🪲 Collects coins & destroys enemies!
+    </div>
+  </div>
+  
+  <button class="game-back-btn" onclick="goBackToSetup()">
+    ← BACK HOME
+  </button>
+  
+  <a href="https://x.com/KingsKripto" target="_blank" class="signature-game">SEKOPEJ</a>
+</div>
+
+<script>
+// CHARACTER UPLOAD SYSTEM
+const GAME_CHARACTERS = [
+  {
+    id: 'lamumu_player',
+    name: '🐄 Lamumu (Player)',
+    description: 'Ana karakter - WASD ile hareket eder',
+    defaultEmoji: '🐄'
+  },
+  {
+    id: 'firefly_helper',
+    name: '🪲 Ateş Böceği',
+    description: 'Space tuşu ile çağrılan yardımcı',
+    defaultEmoji: '🪲'
+  },
+  {
+    id: 'mocoin',
+    name: '💰 MoCoin',
+    description: 'Toplanacak altın paralar',
+    defaultEmoji: '💰'
+  },
+  {
+    id: 'meteor_stone',
+    name: '☄️ Gök Taşı',
+    description: 'E tuşu ultimate silahı',
+    defaultEmoji: '☄️'
+  },
+  {
+    id: 'alien_enemy',
+    name: '👽 Uzaylı',
+    description: 'Tehlikeli düşman uzaylılar',
+    defaultEmoji: '👽'
+  },
+  {
+    id: 'fire_ball',
+    name: '🔥 Ateş Topu',
+    description: 'Düşman mermileri',
+    defaultEmoji: '🔥'
+  },
+  {
+    id: 'planet_obstacle',
+    name: '🪐 Gezegen',
+    description: 'Gezegen engelleri',
+    defaultEmoji: '🪐'
+  },
+  {
+    id: 'space_rock',
+    name: '🗿 Uzay Kayası',
+    description: 'Asteroit engelleri',
+    defaultEmoji: '🗿'
+  }
+];
+
+// Player Data
+let currentPlayer = JSON.parse(localStorage.getItem('lamumu_player_profile') || 'null');
+
+// GAME VARIABLES
+let gameState = {
+  running: false,
+  startTime: 0,
+  coins: 0,
+  lives: 3,
+  score: 0,
+  fireflyReady: true,
+  lastFireflyTime: 0
+};
+
+let player = {
+  x: 100,
+  y: 350,
+  width: 45,
+  height: 45,
+  speed: 6,
+  image: null,
+  emoji: '🐄'
+};
+
+let gameObjects = {
+  mocoins: [],
+  fireflies: [],
+  hearts: [],
+  enemies: [],
+  obstacles: [],
+  stars: []
+};
+
+let keys = {};
+let canvas, ctx;
+let gameAnimationId = null;
+
+// CHARACTER SYSTEM FUNCTIONS
+function initCharacterSystem() {
+  const savedCharacters = JSON.parse(localStorage.getItem('lamumu_game_characters') || 'null');
+  if (!savedCharacters) {
+    const initialCharacters = {};
+    GAME_CHARACTERS.forEach(char => {
+      initialCharacters[char.id] = {
+        ...char,
+        image: null,
+        uploaded: false
+      };
+    });
+    localStorage.setItem('lamumu_game_characters', JSON.stringify(initialCharacters));
+  }
+}
+
+function getGameCharacters() {
+  return JSON.parse(localStorage.getItem('lamumu_game_characters') || '{}');
+}
+
+function loadCharacterSetup() {
+  const characters = getGameCharacters();
+  const grid = document.getElementById('characterGrid');
+  
+  grid.innerHTML = '';
+  
+  let uploadedCount = 0;
+  const totalCount = GAME_CHARACTERS.length;
+  
+  GAME_CHARACTERS.forEach(char => {
+    const savedChar = characters[char.id];
+    const hasImage = savedChar && savedChar.image;
+    
+    if (hasImage) uploadedCount++;
+    
+    const card = document.createElement('div');
+    card.className = `character-card ${hasImage ? 'uploaded' : ''}`;
+    
+    card.innerHTML = `
+      <div class="character-name">${char.name}</div>
+      <div class="character-preview ${hasImage ? 'has-image' : ''}" 
+           style="background-image: ${hasImage ? `url('${savedChar.image}')` : 'none'}">
+        ${!hasImage ? `<div>${char.defaultEmoji}</div>` : ''}
+      </div>
+      <div class="character-description">${char.description}</div>
+      
+      <div class="upload-area ${hasImage ? 'has-image' : ''}" onclick="uploadCharacterImage('${char.id}')">
+        <div class="upload-placeholder">
+          ${hasImage ? '✅ Yüklendi' : '📤 Resim Yükle'}<br>
+          <small>PNG, JPG (Max 2MB)</small>
+        </div>
+      </div>
+      
+      <input type="file" id="charUpload_${char.id}" accept="image/*" style="display: none;" 
+             onchange="handleCharacterImageUpload('${char.id}', this)">
+      
+      <button class="upload-btn" onclick="uploadCharacterImage('${char.id}')">
+        ${hasImage ? '🔄 Değiştir' : '📤 Yükle'}
+      </button>
+      
+      ${hasImage ? `
+        <button class="reset-btn" onclick="resetCharacterImage('${char.id}')">
+          🗑️ Sıfırla
+        </button>
+      ` : ''}
+    `;
+    
+    grid.appendChild(card);
+  });
+  
+  document.getElementById('uploadProgress').textContent = `${uploadedCount}/${totalCount}`;
+  document.getElementById('progressFill').style.width = `${(uploadedCount / totalCount) * 100}%`;
+  
+  if (uploadedCount > 0) {
+    document.getElementById('startGameBtn').style.display = 'block';
+  } else {
+    document.getElementById('startGameBtn').style.display = 'none';
+  }
+}
+
+function uploadCharacterImage(charId) {
+  document.getElementById(`charUpload_${charId}`).click();
+}
+
+function handleCharacterImageUpload(charId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  if (file.size > 2 * 1024 * 1024) {
+    alert('⚠️ Dosya çok büyük! Maksimum 2MB.');
+    return;
+  }
+  
+  if (!file.type.startsWith('image/')) {
+    alert('⚠️ Sadece resim dosyası yükleyin!');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const characters = getGameCharacters();
+      const charData = GAME_CHARACTERS.find(c => c.id === charId);
+      
+      characters[charId] = {
+        ...charData,
+        image: e.target.result,
+        uploaded: true
+      };
+      
+      localStorage.setItem('lamumu_game_characters', JSON.stringify(characters));
+      
+      alert(`🎉 ${charData.name} yüklendi!`);
+      loadCharacterSetup();
+      
+    } catch (error) {
+      alert('❌ Yükleme hatası! Daha küçük dosya deneyin.');
+    }
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+function resetCharacterImage(charId) {
+  if (confirm('🗑️ Varsayılana döndürmek istediğinizden emin misiniz?')) {
+    const characters = getGameCharacters();
+    const charData = GAME_CHARACTERS.find(c => c.id === charId);
+    
+    characters[charId] = {
+      ...charData,
+      image: null,
+      uploaded: false
+    };
+    
+    localStorage.setItem('lamumu_game_characters', JSON.stringify(characters));
+    
+    alert('✅ Varsayılana döndürüldü!');
+    loadCharacterSetup();
+  }
+}
+
+// GAME FUNCTIONS
+function startGamePlay() {
+  document.getElementById('characterSetupScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+  
+  initGame();
+}
+
+function initGame() {
+  console.log('🎮 Game Started - All Issues Fixed!');
+  
+  if (gameAnimationId) {
+    cancelAnimationFrame(gameAnimationId);
+    gameAnimationId = null;
+  }
+  
+  // Load player character
+  const characters = getGameCharacters();
+  const playerChar = characters['lamumu_player'];
+  if (playerChar && playerChar.image) {
+    const img = new Image();
+    img.onload = () => {
+      player.image = img;
+    };
+    img.src = playerChar.image;
+  }
+  
+  // Reset game state
+  gameState = {
+    running: true,
+    startTime: Date.now(),
+    coins: 0,
+    lives: 3,
+    score: 0,
+    fireflyReady: true,
+    lastFireflyTime: 0
+  };
+  
+  // Reset player position
+  player.x = 100;
+  player.y = 350;
+  
+  // Clear all game objects
+  gameObjects = {
+    mocoins: [],
+    fireflies: [],
+    hearts: [],
+    enemies: [],
+    obstacles: [],
+    stars: []
+  };
+  
+  createStars();
+  gameLoop();
+  
+  console.log('✅ All systems ready!');
+}
+
+function createStars() {
+  for (let i = 0; i < 100; i++) {
+    gameObjects.stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1,
+      brightness: Math.random() * 0.8 + 0.2
+    });
+  }
+}
+
+function gameLoop() {
+  if (!gameState.running) return;
+  
+  // Clear canvas
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw background stars
+  drawStars();
+  
+  // Update game objects
+  updatePlayer();
+  updateMocoins();
+  updateFireflies();
+  updateHearts();
+  updateEnemies();
+  updateObstacles();
+  updateUI();
+  updateCooldowns();
+  
+  // Draw everything
+  drawPlayer();
+  drawMocoins();
+  drawFireflies();
+  drawHearts();
+  drawEnemies();
+  drawObstacles();
+  
+  gameAnimationId = requestAnimationFrame(gameLoop);
+}
+
+function drawStars() {
+  ctx.fillStyle = 'white';
+  gameObjects.stars.forEach(star => {
+    ctx.globalAlpha = star.brightness;
+    ctx.fillRect(star.x, star.y, star.size, star.size);
+  });
+  ctx.globalAlpha = 1;
+}
+
+// PLAYER SYSTEM - WASD MOVEMENT
+function updatePlayer() {
+  if (keys['w'] && player.y > 0) {
+    player.y -= player.speed;
+  }
+  if (keys['s'] && player.y < canvas.height - player.height) {
+    player.y += player.speed;
+  }
+  if (keys['a'] && player.x > 0) {
+    player.x -= player.speed;
+  }
+  if (keys['d'] && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  }
+  
+  // Keep player in bounds
+  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+}
+
+// PLAYER DRAWING
+function drawPlayer() {
+  if (player.image) {
+    ctx.save();
+    
+    // White circle
+    ctx.beginPath();
+    ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2 + 3, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Rounded corners
+    const radius = 12;
+    ctx.beginPath();
+    ctx.moveTo(player.x + radius, player.y);
+    ctx.lineTo(player.x + player.width - radius, player.y);
+    ctx.quadraticCurveTo(player.x + player.width, player.y, player.x + player.width, player.y + radius);
+    ctx.lineTo(player.x + player.width, player.y + player.height - radius);
+    ctx.quadraticCurveTo(player.x + player.width, player.y + player.height, player.x + player.width - radius, player.y + player.height);
+    ctx.lineTo(player.x + radius, player.y + player.height);
+    ctx.quadraticCurveTo(player.x, player.y + player.height, player.x, player.y + player.height - radius);
+    ctx.lineTo(player.x, player.y + radius);
+    ctx.quadraticCurveTo(player.x, player.y, player.x + radius, player.y);
+    ctx.closePath();
+    ctx.clip();
+    
+    ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+    ctx.restore();
+  } else {
+    // White circle + emoji
+    ctx.beginPath();
+    ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2 + 3, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.font = '45px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.fillText(player.emoji, player.x + player.width/2, player.y + player.height - 8);
+  }
+}
+
+// MOCOIN SYSTEM
+function updateMocoins() {
+  if (Math.random() < 0.025) {
+    const characters = getGameCharacters();
+    const coinChar = characters['mocoin'];
+    
+    gameObjects.mocoins.push({
+      x: canvas.width,
+      y: Math.random() * (canvas.height - 40),
+      width: 40,
+      height: 40,
+      speed: 4,
+      image: coinChar && coinChar.image ? coinChar.image : null,
+      emoji: '💰'
+    });
+  }
+  
+  for (let i = gameObjects.mocoins.length - 1; i >= 0; i--) {
+    let coin = gameObjects.mocoins[i];
+    coin.x -= coin.speed;
+    
+    if (coin.x + coin.width < 0) {
+      gameObjects.mocoins.splice(i, 1);
+      continue;
+    }
+    
+    if (checkCollision(player, coin)) {
+      gameState.coins++;
+      gameState.score += 10;
+      gameObjects.mocoins.splice(i, 1);
+    }
+  }
+}
+
+// MOCOIN DRAWING
+function drawMocoins() {
+  gameObjects.mocoins.forEach(coin => {
+    if (coin.image) {
+      ctx.save();
+      
+      // Round clip
+      ctx.beginPath();
+      ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, 2 * Math.PI);
+      ctx.clip();
+      
+      const img = new Image();
+      img.src = coin.image;
+      ctx.drawImage(img, coin.x, coin.y, coin.width, coin.height);
+      ctx.restore();
+    } else {
+      ctx.font = '40px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#FFD700';
+      ctx.fillText(coin.emoji, coin.x + coin.width/2, coin.y + coin.height - 5);
+    }
+  });
+}
+
+// FIREFLY SYSTEM
+function updateFireflies() {
+  for (let i = gameObjects.fireflies.length - 1; i >= 0; i--) {
+    let firefly = gameObjects.fireflies[i];
+    
+    firefly.x += firefly.speed;
+    firefly.y += Math.sin(firefly.waveTime) * firefly.waveAmplitude;
+    firefly.waveTime += 0.3;
+    firefly.lifetime--;
+    
+    if (firefly.x > canvas.width + 100 || firefly.lifetime <= 0) {
+      gameObjects.fireflies.splice(i, 1);
+      continue;
+    }
+    
+    if (firefly.y < 0) firefly.y = 0;
+    if (firefly.y > canvas.height - firefly.height) firefly.y = canvas.height - firefly.height;
+    
+    // Coin collection
+    for (let j = gameObjects.mocoins.length - 1; j >= 0; j--) {
+      if (checkCollision(firefly, gameObjects.mocoins[j])) {
+        gameState.coins++;
+        gameState.score += 15;
+        gameObjects.mocoins.splice(j, 1);
+      }
+    }
+    
+    // Enemy destruction
+    for (let j = gameObjects.enemies.length - 1; j >= 0; j--) {
+      if (checkCollision(firefly, gameObjects.enemies[j])) {
+        gameObjects.enemies.splice(j, 1);
+        gameState.score += 50;
+      }
+    }
+    
+    // Obstacle destruction
+    for (let j = gameObjects.obstacles.length - 1; j >= 0; j--) {
+      if (checkCollision(firefly, gameObjects.obstacles[j])) {
+        gameObjects.obstacles.splice(j, 1);
+        gameState.score += 30;
+      }
+    }
+  }
+}
+
+// FIREFLY DRAWING
+function drawFireflies() {
+  gameObjects.fireflies.forEach(firefly => {
+    if (firefly.customImage && firefly.customImage.complete) {
+      ctx.save();
+      
+      // Green circle
+      ctx.beginPath();
+      ctx.arc(firefly.x + firefly.width/2, firefly.y + firefly.height/2, firefly.width/2 + 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#00FF88';
+      ctx.lineWidth = 4;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#00FF88';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Rounded corners
+      const radius = 12;
+      ctx.beginPath();
+      ctx.moveTo(firefly.x + radius, firefly.y);
+      ctx.lineTo(firefly.x + firefly.width - radius, firefly.y);
+      ctx.quadraticCurveTo(firefly.x + firefly.width, firefly.y, firefly.x + firefly.width, firefly.y + radius);
+      ctx.lineTo(firefly.x + firefly.width, firefly.y + firefly.height - radius);
+      ctx.quadraticCurveTo(firefly.x + firefly.width, firefly.y + firefly.height, firefly.x + firefly.width - radius, firefly.y + firefly.height);
+      ctx.lineTo(firefly.x + radius, firefly.y + firefly.height);
+      ctx.quadraticCurveTo(firefly.x, firefly.y + firefly.height, firefly.x, firefly.y + firefly.height - radius);
+      ctx.lineTo(firefly.x, firefly.y + radius);
+      ctx.quadraticCurveTo(firefly.x, firefly.y, firefly.x + radius, firefly.y);
+      ctx.closePath();
+      ctx.clip();
+      
+      ctx.drawImage(firefly.customImage, firefly.x, firefly.y, firefly.width, firefly.height);
+      ctx.restore();
+    } else {
+      // Green circle + emoji
+      ctx.beginPath();
+      ctx.arc(firefly.x + firefly.width/2, firefly.y + firefly.height/2, firefly.width/2 + 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#00FF88';
+      ctx.lineWidth = 4;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#00FF88';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      ctx.font = '35px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#00FF88';
+      ctx.fillText(firefly.emoji, firefly.x + firefly.width/2, firefly.y + firefly.height - 2);
+    }
+  });
+}
+
+function callFirefly() {
+  const now = Date.now();
+  if (!gameState.fireflyReady || now - gameState.lastFireflyTime < 5000) {
+    return;
+  }
+  
+  gameState.lastFireflyTime = now;
+  gameState.fireflyReady = false;
+  
+  const characters = getGameCharacters();
+  const fireflyChar = characters['firefly_helper'];
+  
+  let customImage = null;
+  if (fireflyChar && fireflyChar.image) {
+    customImage = new Image();
+    customImage.src = fireflyChar.image;
+  }
+  
+  gameObjects.fireflies.push({
+    x: player.x + 50,
+    y: player.y + 15,
+    width: 45,
+    height: 45,
+    speed: 6,
+    waveTime: 0,
+    waveAmplitude: 4,
+    lifetime: 250,
+    customImage: customImage,
+    emoji: '🪲'
+  });
+  
+  console.log('🪲 Firefly called!');
+}
+
+// ENEMY SYSTEM
+function updateEnemies() {
+  if (Math.random() < 0.015) {
+    const characters = getGameCharacters();
+    const enemyTypes = ['alien_enemy', 'fire_ball'];
+    const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    const enemyChar = characters[randomType];
+    
+    gameObjects.enemies.push({
+      x: canvas.width,
+      y: Math.random() * (canvas.height - 50),
+      width: 50,
+      height: 50,
+      speed: Math.random() * 2 + 3,
+      type: randomType,
+      image: enemyChar && enemyChar.image ? enemyChar.image : null,
+      emoji: randomType === 'alien_enemy' ? '👽' : '🔥'
+    });
+  }
+  
+  for (let i = gameObjects.enemies.length - 1; i >= 0; i--) {
+    let enemy = gameObjects.enemies[i];
+    enemy.x -= enemy.speed;
+    
+    if (enemy.x + enemy.width < 0) {
+      gameObjects.enemies.splice(i, 1);
+      continue;
+    }
+    
+    if (checkCollision(player, enemy)) {
+      gameState.lives--;
+      gameObjects.enemies.splice(i, 1);
+      
+      if (gameState.lives <= 0) {
+        gameOver();
+        return;
+      }
+    }
+  }
+}
+
+// ENEMY DRAWING
+function drawEnemies() {
+  gameObjects.enemies.forEach(enemy => {
+    if (enemy.image) {
+      ctx.save();
+      
+      // Red glow for fire_ball only
+      if (enemy.type === 'fire_ball') {
+        ctx.beginPath();
+        ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2 + 8, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#FF0000';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+      
+      const radius = 12;
+      ctx.beginPath();
+      ctx.moveTo(enemy.x + radius, enemy.y);
+      ctx.lineTo(enemy.x + enemy.width - radius, enemy.y);
+      ctx.quadraticCurveTo(enemy.x + enemy.width, enemy.y, enemy.x + enemy.width, enemy.y + radius);
+      ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height - radius);
+      ctx.quadraticCurveTo(enemy.x + enemy.width, enemy.y + enemy.height, enemy.x + enemy.width - radius, enemy.y + enemy.height);
+      ctx.lineTo(enemy.x + radius, enemy.y + enemy.height);
+      ctx.quadraticCurveTo(enemy.x, enemy.y + enemy.height, enemy.x, enemy.y + enemy.height - radius);
+      ctx.lineTo(enemy.x, enemy.y + radius);
+      ctx.quadraticCurveTo(enemy.x, enemy.y, enemy.x + radius, enemy.y);
+      ctx.closePath();
+      ctx.clip();
+      
+      const img = new Image();
+      img.src = enemy.image;
+      ctx.drawImage(img, enemy.x, enemy.y, enemy.width, enemy.height);
+      ctx.restore();
+    } else {
+      // Red glow for fire_ball only
+      if (enemy.type === 'fire_ball') {
+        ctx.beginPath();
+        ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2 + 8, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#FF0000';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+      
+      ctx.font = '50px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = enemy.type === 'alien_enemy' ? '#00FF00' : '#FF0000';
+      ctx.fillText(enemy.emoji, enemy.x + enemy.width/2, enemy.y + enemy.height - 5);
+    }
+  });
+}
+
+// OBSTACLE SYSTEM
+function updateObstacles() {
+  if (Math.random() < 0.008) {
+    const characters = getGameCharacters();
+    const obstacleChar = characters['space_rock'];
+    
+    gameObjects.obstacles.push({
+      x: canvas.width,
+      y: Math.random() * (canvas.height - 70),
+      width: 70,
+      height: 70,
+      speed: Math.random() * 1.5 + 2,
+      type: 'space_rock',
+      image: obstacleChar && obstacleChar.image ? obstacleChar.image : null,
+      emoji: '🗿'
+    });
+  }
+  
+  for (let i = gameObjects.obstacles.length - 1; i >= 0; i--) {
+    let obstacle = gameObjects.obstacles[i];
+    obstacle.x -= obstacle.speed;
+    
+    if (obstacle.x + obstacle.width < 0) {
+      gameObjects.obstacles.splice(i, 1);
+      continue;
+    }
+    
+    if (checkCollision(player, obstacle)) {
+      gameState.lives--;
+      gameObjects.obstacles.splice(i, 1);
+      
+      if (gameState.lives <= 0) {
+        gameOver();
+        return;
+      }
+    }
+  }
+}
+
+// OBSTACLE DRAWING
+function drawObstacles() {
+  gameObjects.obstacles.forEach(obstacle => {
+    if (obstacle.image) {
+      ctx.save();
+      
+      // White circle
+      ctx.beginPath();
+      ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.width/2 + 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = 'white';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      const radius = 15;
+      ctx.beginPath();
+      ctx.moveTo(obstacle.x + radius, obstacle.y);
+      ctx.lineTo(obstacle.x + obstacle.width - radius, obstacle.y);
+      ctx.quadraticCurveTo(obstacle.x + obstacle.width, obstacle.y, obstacle.x + obstacle.width, obstacle.y + radius);
+      ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height - radius);
+      ctx.quadraticCurveTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height, obstacle.x + obstacle.width - radius, obstacle.y + obstacle.height);
+      ctx.lineTo(obstacle.x + radius, obstacle.y + obstacle.height);
+      ctx.quadraticCurveTo(obstacle.x, obstacle.y + obstacle.height, obstacle.x, obstacle.y + obstacle.height - radius);
+      ctx.lineTo(obstacle.x, obstacle.y + radius);
+      ctx.quadraticCurveTo(obstacle.x, obstacle.y, obstacle.x + radius, obstacle.y);
+      ctx.closePath();
+      ctx.clip();
+      
+      const img = new Image();
+      img.src = obstacle.image;
+      ctx.drawImage(img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      ctx.restore();
+    } else {
+      // White circle + emoji
+      ctx.beginPath();
+      ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.width/2 + 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = 'white';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      ctx.font = '70px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#8B4513';
+      ctx.fillText(obstacle.emoji, obstacle.x + obstacle.width/2, obstacle.y + obstacle.height - 10);
+    }
+  });
+}
+
+// HEART SYSTEM
+function updateHearts() {
+  if (Math.random() < 0.0003) {
+    gameObjects.hearts.push({
+      x: canvas.width,
+      y: Math.random() * (canvas.height - 30),
+      width: 30,
+      height: 30,
+      speed: 2,
+      emoji: '❤️'
+    });
+  }
+  
+  for (let i = gameObjects.hearts.length - 1; i >= 0; i--) {
+    let heart = gameObjects.hearts[i];
+    heart.x -= heart.speed;
+    
+    if (heart.x + heart.width < 0) {
+      gameObjects.hearts.splice(i, 1);
+      continue;
+    }
+    
+    if (checkCollision(player, heart)) {
+      gameState.lives++;
+      gameState.score += 50;
+      gameObjects.hearts.splice(i, 1);
+    }
+  }
+}
+
+function drawHearts() {
+  gameObjects.hearts.forEach(heart => {
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FF69B4';
+    ctx.fillText(heart.emoji, heart.x + heart.width/2, heart.y + heart.height - 2);
+  });
+}
+
+// INPUT SYSTEM
+document.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+  
+  if (e.key === ' ') {
+    e.preventDefault();
+    callFirefly();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+// UI SYSTEM
+function updateUI() {
+  const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  document.getElementById('gameTime').textContent = 
+    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  
+  document.getElementById('coinCount').textContent = gameState.coins;
+  document.getElementById('lives').textContent = gameState.lives;
+}
+
+function updateCooldowns() {
+  const now = Date.now();
+  const timeSinceFirefly = now - gameState.lastFireflyTime;
+  
+  if (timeSinceFirefly < 5000) {
+    const progress = (timeSinceFirefly / 5000) * 100;
+    document.getElementById('fireflyCooldown').style.width = `${progress}%`;
+    document.getElementById('fireflyStatus').textContent = 'Cooldown';
+  } else {
+    document.getElementById('fireflyCooldown').style.width = '0%';
+    document.getElementById('fireflyStatus').textContent = 'Ready';
+    gameState.fireflyReady = true;
+  }
+}
+
+function gameOver() {
+  gameState.running = false;
+  
+  if (gameAnimationId) {
+    cancelAnimationFrame(gameAnimationId);
+    gameAnimationId = null;
+  }
+  
+  alert(`🎮 GAME OVER!\n\n🐄 Final Score: ${gameState.score}\n💰 MoCoins Collected: ${gameState.coins}\n⏱️ Time Survived: ${Math.floor((Date.now() - gameState.startTime) / 1000)}s\n\n🚀 Try again!`);
+  
+  setTimeout(() => {
+    initGame();
+  }, 500);
+}
+
+// UTILITY FUNCTIONS
+function checkCollision(obj1, obj2) {
+  return obj1.x < obj2.x + obj2.width &&
+         obj1.x + obj1.width > obj2.x &&
+         obj1.y < obj2.y + obj2.height &&
+         obj1.y + obj1.height > obj2.y;
+}
+
+function goBackToMenu() {
+  if (gameAnimationId) {
+    cancelAnimationFrame(gameAnimationId);
+    gameAnimationId = null;
+  }
+  gameState.running = false;
+  window.location.href = 'index.html';
+}
+
+function goBackToSetup() {
+  if (gameAnimationId) {
+    cancelAnimationFrame(gameAnimationId);
+    gameAnimationId = null;
+  }
+  gameState.running = false;
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('characterSetupScreen').style.display = 'flex';
+}
+
+// Initialize when page loads
+window.addEventListener('load', () => {
+  console.log('🎮 Lamumu Adventure Game Loading...');
+  console.log('📅 Date: 2025-08-27 13:05:40');
+  console.log('👤 User: sekopej77-cmd');
+  console.log('🚀 DIRECT GAME START - All Issues Fixed!');
+  
+  initCharacterSystem();
+  
+  // Direct game start!
+  document.getElementById('characterSetupScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+  
+  initGame();
+});
+</script>
+
+</body>
+</html>
