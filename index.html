@@ -736,7 +736,7 @@ const LAMUMU_NFT_COLLECTION = [
     price: 10000,
     maxQuantity: 50,
     emoji: '👨‍🚀🐄',
-    image: null
+    image: 'nft_astronot.png'
   },
   {
     id: 'pilot_lamumu',
@@ -746,7 +746,7 @@ const LAMUMU_NFT_COLLECTION = [
     price: 8000,
     maxQuantity: 75,
     emoji: '✈️🐄',
-    image: null
+    image: 'nft_pilot.png'
   },
   {
     id: 'police_lamumu',
@@ -756,7 +756,7 @@ const LAMUMU_NFT_COLLECTION = [
     price: 5000,
     maxQuantity: 150,
     emoji: '👮‍♂️🐄',
-    image: null
+    image: 'nft_polis.png'
   },
   {
     id: 'dj_lamumu',
@@ -766,7 +766,7 @@ const LAMUMU_NFT_COLLECTION = [
     price: 3000,
     maxQuantity: 200,
     emoji: '🎧🐄',
-    image: null
+    image: 'nft_dj.png'
   },
   {
     id: 'plumber_lamumu', 
@@ -776,7 +776,7 @@ const LAMUMU_NFT_COLLECTION = [
     price: 1500,
     maxQuantity: 500,
     emoji: '🔧🐄',
-    image: null
+    image: 'nft_tesisatci.png'
   }
 ];
 
@@ -1115,6 +1115,16 @@ function initializeNFTCollection() {
   const savedNFTs = JSON.parse(localStorage.getItem('lamumu_nft_collection') || 'null');
   if (!savedNFTs) {
     localStorage.setItem('lamumu_nft_collection', JSON.stringify(LAMUMU_NFT_COLLECTION));
+  } else {
+    // Update existing NFTs with default images if they don't have images
+    const updatedNFTs = savedNFTs.map(savedNft => {
+      const defaultNft = LAMUMU_NFT_COLLECTION.find(n => n.id === savedNft.id);
+      if (defaultNft && !savedNft.image && defaultNft.image) {
+        return { ...savedNft, image: defaultNft.image };
+      }
+      return savedNft;
+    });
+    localStorage.setItem('lamumu_nft_collection', JSON.stringify(updatedNFTs));
   }
   
   const savedQuantities = JSON.parse(localStorage.getItem('lamumu_nft_quantities') || 'null');
@@ -1195,7 +1205,7 @@ function loadNFTMarket() {
     
     card.innerHTML = `
       ${nft.image ? 
-        `<img src="${nft.image}" alt="${nft.name}" style="width: 200px; height: 200px; border-radius: 15px; border: 3px solid #fff; margin: 0 auto 20px; object-fit: cover;">` : 
+        `<img src="${nft.image}" alt="${nft.name}" style="width: 200px; height: 200px; border-radius: 15px; border: 3px solid #fff; margin: 0 auto 20px; object-fit: cover; display: block;">` : 
         `<div class="nft-image-placeholder">${nft.emoji}</div>`
       }
       
@@ -1217,7 +1227,10 @@ function loadNFTMarket() {
         </div>
         <input type="file" id="nftUpload_${nft.id}" accept="image/*" style="display: none;" onchange="handleNFTImageUpload('${nft.id}', this)">
         <button class="upload-btn" onclick="uploadNFTImage('${nft.id}')">🖼️ UPLOAD IMAGE</button>
-      ` : ''}
+      ` : `
+        <input type="file" id="nftUpload_${nft.id}" accept="image/*" style="display: none;" onchange="handleNFTImageUpload('${nft.id}', this)">
+        <button class="upload-btn" onclick="uploadNFTImage('${nft.id}')">🔄 CHANGE IMAGE</button>
+      `}
       
       <br>
       
