@@ -451,49 +451,57 @@ const GAME_CHARACTERS = [
     id: 'lamumu_player',
     name: '🐄 Lamumu (Player)',
     description: 'Ana karakter - WASD ile hareket eder',
-    defaultEmoji: '🐄'
+    defaultEmoji: '🐄',
+    defaultImage: 'lamumu_karakter.png.jpg'
   },
   {
     id: 'firefly_helper',
     name: '🪲 Ateş Böceği',
     description: 'Space tuşu ile çağrılan yardımcı',
-    defaultEmoji: '🪲'
+    defaultEmoji: '🪲',
+    defaultImage: 'ates_bocegi.png.jpg'
   },
   {
     id: 'mocoin',
     name: '💰 MoCoin',
     description: 'Toplanacak altın paralar',
-    defaultEmoji: '💰'
+    defaultEmoji: '💰',
+    defaultImage: 'Coin.png'
   },
   {
     id: 'meteor_stone',
     name: '☄️ Gök Taşı',
     description: 'E tuşu ultimate silahı',
-    defaultEmoji: '☄️'
+    defaultEmoji: '☄️',
+    defaultImage: 'oyun2.png.jpg'
   },
   {
     id: 'alien_enemy',
     name: '👽 Uzaylı',
     description: 'Tehlikeli düşman uzaylılar',
-    defaultEmoji: '👽'
+    defaultEmoji: '👽',
+    defaultImage: 'oyun3.png.jpg'
   },
   {
     id: 'fire_ball',
     name: '🔥 Ateş Topu',
     description: 'Düşman mermileri',
-    defaultEmoji: '🔥'
+    defaultEmoji: '🔥',
+    defaultImage: 'oyun5.png.jpg'
   },
   {
     id: 'planet_obstacle',
     name: '🪐 Gezegen',
     description: 'Gezegen engelleri',
-    defaultEmoji: '🪐'
+    defaultEmoji: '🪐',
+    defaultImage: null
   },
   {
     id: 'space_rock',
     name: '🗿 Uzay Kayası',
     description: 'Asteroit engelleri',
-    defaultEmoji: '🗿'
+    defaultEmoji: '🗿',
+    defaultImage: null
   }
 ];
 
@@ -542,11 +550,34 @@ function initCharacterSystem() {
     GAME_CHARACTERS.forEach(char => {
       initialCharacters[char.id] = {
         ...char,
-        image: null,
-        uploaded: false
+        image: char.defaultImage || null,
+        uploaded: !!char.defaultImage
       };
     });
     localStorage.setItem('lamumu_game_characters', JSON.stringify(initialCharacters));
+  } else {
+    // Update existing characters with default images if they don't have custom ones
+    const updatedCharacters = { ...savedCharacters };
+    let updated = false;
+    
+    GAME_CHARACTERS.forEach(char => {
+      if (!updatedCharacters[char.id]) {
+        updatedCharacters[char.id] = {
+          ...char,
+          image: char.defaultImage || null,
+          uploaded: !!char.defaultImage
+        };
+        updated = true;
+      } else if (!updatedCharacters[char.id].image && char.defaultImage) {
+        updatedCharacters[char.id].image = char.defaultImage;
+        updatedCharacters[char.id].uploaded = true;
+        updated = true;
+      }
+    });
+    
+    if (updated) {
+      localStorage.setItem('lamumu_game_characters', JSON.stringify(updatedCharacters));
+    }
   }
 }
 
@@ -701,6 +732,10 @@ function initGame() {
     const img = new Image();
     img.onload = () => {
       player.image = img;
+    };
+    img.onerror = () => {
+      console.log('Failed to load player image, using emoji');
+      player.image = null;
     };
     img.src = playerChar.image;
   }
@@ -863,7 +898,8 @@ function updateMocoins() {
       width: 40,
       height: 40,
       speed: 4,
-      image: coinChar && coinChar.image ? coinChar.image : null,
+      imageSrc: coinChar && coinChar.image ? coinChar.image : null,
+      image: null,
       emoji: '💰'
     });
   }
@@ -871,6 +907,19 @@ function updateMocoins() {
   for (let i = gameObjects.mocoins.length - 1; i >= 0; i--) {
     let coin = gameObjects.mocoins[i];
     coin.x -= coin.speed;
+    
+    // Load image if not loaded yet
+    if (coin.imageSrc && !coin.image && !coin.imageLoading) {
+      coin.imageLoading = true;
+      const img = new Image();
+      img.onload = () => {
+        coin.image = img;
+      };
+      img.onerror = () => {
+        coin.imageSrc = null; // Fallback to emoji
+      };
+      img.src = coin.imageSrc;
+    }
     
     if (coin.x + coin.width < 0) {
       gameObjects.mocoins.splice(i, 1);
@@ -896,9 +945,7 @@ function drawMocoins() {
       ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, 2 * Math.PI);
       ctx.clip();
       
-      const img = new Image();
-      img.src = coin.image;
-      ctx.drawImage(img, coin.x, coin.y, coin.width, coin.height);
+      ctx.drawImage(coin.image, coin.x, coin.y, coin.width, coin.height);
       ctx.restore();
     } else {
       ctx.font = '40px Arial';
@@ -1021,6 +1068,12 @@ function callFirefly() {
   let customImage = null;
   if (fireflyChar && fireflyChar.image) {
     customImage = new Image();
+    customImage.onload = () => {
+      // Image loaded successfully
+    };
+    customImage.onerror = () => {
+      customImage = null; // Fallback to emoji
+    };
     customImage.src = fireflyChar.image;
   }
   
@@ -1048,16 +1101,33 @@ function updateEnemies() {
     const randomType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
     const enemyChar = characters[randomType];
     
-    gameObjects.enemies.push({
+    const enemy = {
       x: canvas.width,
       y: Math.random() * (canvas.height - 50),
       width: 50,
       height: 50,
       speed: Math.random() * 2 + 3,
       type: randomType,
-      image: enemyChar && enemyChar.image ? enemyChar.image : null,
+      imageSrc: enemyChar && enemyChar.image ? enemyChar.image : null,
+      image: null,
+      imageLoading: false,
       emoji: randomType === 'alien_enemy' ? '👽' : '🔥'
-    });
+    };
+    
+    // Load image immediately
+    if (enemy.imageSrc) {
+      enemy.imageLoading = true;
+      const img = new Image();
+      img.onload = () => {
+        enemy.image = img;
+      };
+      img.onerror = () => {
+        enemy.imageSrc = null; // Fallback to emoji
+      };
+      img.src = enemy.imageSrc;
+    }
+    
+    gameObjects.enemies.push(enemy);
   }
   
   for (let i = gameObjects.enemies.length - 1; i >= 0; i--) {
@@ -1113,9 +1183,7 @@ function drawEnemies() {
       ctx.closePath();
       ctx.clip();
       
-      const img = new Image();
-      img.src = enemy.image;
-      ctx.drawImage(img, enemy.x, enemy.y, enemy.width, enemy.height);
+      ctx.drawImage(enemy.image, enemy.x, enemy.y, enemy.width, enemy.height);
       ctx.restore();
     } else {
       // Red glow for fire_ball only
